@@ -6,6 +6,7 @@ import (
 )
 
 func throw(format string, a ...any) {
+	fmt.Printf("panic: ")
 	fmt.Printf(format, a...)
 	fmt.Println()
 	os.Exit(1)

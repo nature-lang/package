@@ -10,6 +10,7 @@ import (
 func init() {
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(syncCmd)
+	syncCmd.Flags().BoolVarP(&src.Verbose, "verbose", "v", false, "verbose output")
 }
 
 const (

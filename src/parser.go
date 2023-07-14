@@ -1,6 +1,7 @@
 package src
 
 import (
+	"fmt"
 	"github.com/BurntSushi/toml"
 )
 
@@ -8,11 +9,11 @@ const (
 	PackageFile = "package.toml"
 )
 
-func parser() Package {
+func Parser(file string) (Package, error) {
 	var p Package
-	if _, err := toml.DecodeFile(PackageFile, &p); err != nil {
-		throw("package.toml parser failed: %v", err)
+	if _, err := toml.DecodeFile(file, &p); err != nil {
+		return p, fmt.Errorf("package.toml Parser failed: %v", err)
 	}
 
-	return p
+	return p, nil
 }

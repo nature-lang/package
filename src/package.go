@@ -24,8 +24,3 @@ type Package struct {
 	Path         string                `toml:"path"` // 自定义入口文件
 	Dependencies map[string]Dependency `toml:"dependencies"`
 }
-
-func Sync() {
-	// - 判断 package.toml 文件是否存在
-	parser()
-}
