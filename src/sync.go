@@ -5,7 +5,6 @@ import (
 	cp "github.com/otiai10/copy"
 	"os"
 	"os/user"
-	"path/filepath"
 	"strings"
 )
 
@@ -65,7 +64,7 @@ func SyncByConfig(configFile string) {
 	}
 
 	// 循环便利下载依赖
-	for _, dep := range p.Dependencies {
+	for key, dep := range p.Dependencies {
 		if dep.Version == "" {
 			throw("version cannot be empty")
 		}
@@ -74,7 +73,7 @@ func SyncByConfig(configFile string) {
 		if dep.Type == DependencyTypeGit {
 			depPath = SyncGit(dep.Url, dep.Version)
 		} else if dep.Type == DependencyTypeLocal {
-			depPath = SyncLocal(dep.Path, dep.Version)
+			depPath = SyncLocal(key, dep.Path, dep.Version)
 		} else {
 			throw("unknown dependency type=%v", dep.Type)
 		}
@@ -87,7 +86,7 @@ func SyncByConfig(configFile string) {
 	handled[configFile] = true
 }
 
-func SyncLocal(path, version string) string {
+func SyncLocal(packageKey, path, version string) string {
 	if path == "" || version == "" {
 		throw("path or version cannot be empty")
 	}
@@ -97,12 +96,7 @@ func SyncLocal(path, version string) string {
 		throw("path=%v not exists", path)
 	}
 
-	fullpath, err := filepath.Abs(path)
-	if err != nil {
-		throw("cannot get abs path=%v, err=%v", path, err)
-	}
-	dst := dstDir(fullpath, version)
-
+	dst := dstDir(packageKey, version)
 	if dst == "" || dst == "/" || dst == "~" {
 		throw("dst=%v is invalid", dst)
 		return ""
@@ -125,7 +119,7 @@ func SyncLocal(path, version string) string {
 			return strings.HasSuffix(src, ".git"), nil
 		},
 	}
-	err = cp.Copy(path, dst, opt)
+	err := cp.Copy(path, dst, opt)
 	if err != nil {
 		throw("cannot copy path=%v to dst=%v, err=%v", path, dst, err)
 	}
