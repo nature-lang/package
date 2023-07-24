@@ -1,6 +1,11 @@
 package src
 
-import logger "log"
+import (
+	"fmt"
+	logger "log"
+	"path/filepath"
+	"runtime"
+)
 
 var (
 	Verbose = false
@@ -11,6 +16,9 @@ func log(format string, a ...any) {
 		return
 	}
 
-	logger.SetFlags(logger.Ldate | logger.Ltime)
-	logger.Printf(format, a...)
+	logger.SetFlags(logger.Ltime)
+	_, file, line, _ := runtime.Caller(1)
+	fmt.Printf("log in %s:%d ", filepath.Base(file), line)
+	fmt.Printf(format, a...)
+	fmt.Println()
 }

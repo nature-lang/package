@@ -12,6 +12,7 @@ import (
 // -->
 // ~/.nature/package/sources/github.com.BurntSushi.toml@v1.3.2
 func dstDir(url, version string) string {
+	url = strings.TrimLeft(url, "/")
 	name := strings.Replace(url, "/", ".", -1)
 	return fmt.Sprintf("%s/%s@%s", packageSourcesDir, name, version)
 }

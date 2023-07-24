@@ -2,8 +2,10 @@ package src
 
 import (
 	"fmt"
+	cp "github.com/otiai10/copy"
 	"os"
 	"os/user"
+	"path/filepath"
 	"strings"
 )
 
@@ -71,12 +73,10 @@ func SyncByConfig(configFile string) {
 		depPath := ""
 		if dep.Type == DependencyTypeGit {
 			depPath = SyncGit(dep.Url, dep.Version)
+		} else if dep.Type == DependencyTypeLocal {
+			depPath = SyncLocal(dep.Path, dep.Version)
 		} else {
-			if dep.Path == "" {
-				throw("path cannot be empty")
-			}
-			depPath = dep.Path
-			log("use local dst=%v", depPath)
+			throw("unknown dependency type=%v", dep.Type)
 		}
 
 		// 配置文件, 递归
@@ -85,6 +85,53 @@ func SyncByConfig(configFile string) {
 	}
 
 	handled[configFile] = true
+}
+
+func SyncLocal(path, version string) string {
+	if path == "" || version == "" {
+		throw("path or version cannot be empty")
+	}
+
+	// 检查目录是否存在
+	if !dirExists(path) {
+		throw("path=%v not exists", path)
+	}
+
+	fullpath, err := filepath.Abs(path)
+	if err != nil {
+		throw("cannot get abs path=%v, err=%v", path, err)
+	}
+	dst := dstDir(fullpath, version)
+
+	if dst == "" || dst == "/" || dst == "~" {
+		throw("dst=%v is invalid", dst)
+		return ""
+	}
+	if !strings.HasPrefix(dst, packageSourcesDir) {
+		throw("dst=%v is invalid", dst)
+		return ""
+	}
+
+	if dirExists(dst) {
+		err := os.RemoveAll(dst)
+		if err != nil {
+			throw("cannot remove dir=%v, err=%v", dst, err)
+		}
+	}
+
+	// 将 path 目录 copy 到 dst
+	opt := cp.Options{
+		Skip: func(info os.FileInfo, src, dest string) (bool, error) {
+			return strings.HasSuffix(src, ".git"), nil
+		},
+	}
+	err = cp.Copy(path, dst, opt)
+	if err != nil {
+		throw("cannot copy path=%v to dst=%v, err=%v", path, dst, err)
+	}
+
+	log("sync local success dst=%v", dst)
+	return dst
 }
 
 func SyncGit(url, version string) string {
