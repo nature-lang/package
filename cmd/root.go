@@ -8,7 +8,6 @@ import (
 )
 
 func init() {
-	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(syncCmd)
 	syncCmd.Flags().BoolVarP(&src.Verbose, "verbose", "v", false, "verbose output")
 }
@@ -17,13 +16,13 @@ const (
 	Version = "0.1.0-beta"
 )
 
-var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Print the version number of Hugo",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("nature package %v\n", Version)
-	},
-}
+//var versionCmd = &cobra.Command{
+//	Use:   "--version",
+//	Short: "Print the version number of Hugo",
+//	Run: func(cmd *cobra.Command, args []string) {
+//		fmt.Printf("nature package %v\n", Version)
+//	},
+//}
 
 var syncCmd = &cobra.Command{
 	Use:   "sync",
@@ -33,7 +32,9 @@ var syncCmd = &cobra.Command{
 	},
 }
 
-var rootCmd = &cobra.Command{}
+var rootCmd = &cobra.Command{
+	Version: Version,
+}
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
